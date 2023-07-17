@@ -4,8 +4,135 @@
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<title>QR</title>
+
+		<script src="../AR.js-master/three.js/examples/vendor/three.js/build/three.min.js"></script>
+		<script src="../AR.js-master/three.js/build/ar-threex.js"></script>
+
+		<script>
+			THREEx.ArToolkitContext.baseURL = "../AR.js-master/";
+		</script>
 	</head>
 	<body>
 		<h1>使用QR码</h1>
 	</body>
+
+	<script>
+		var onRenderFcts = []; // 用来存储那些会在render loop时执行的函数
+
+		// init render
+		var renderer = new THREE.WebGLRenderer({
+			antialias: true, // 抗锯齿
+			alpha: true, // 透明度 true = 0
+		});
+		renderer.setClearColor(new THREE.Color("lightgrey"), 0); // 它的意思是每次绘制清除缓冲区后的颜色通道设置，简单就是设置每次绘制的背景颜色, 0代表透明度
+		renderer.setSize(640, 480);
+		renderer.domElement.style.position = "absolute";
+		renderer.domElement.style.top = "0px";
+		renderer.domElement.style.left = "0px";
+		document.body.appendChild(renderer.domElement);
+
+		// init scene and camera
+		var scene = new THREE.Scene();
+		var camera = new THREE.Camera();
+		scene.add(camera);
+
+		var arToolkitContext, arMarkerControls;
+		// arToolkitSource 要去做位置分析的数据源
+		var arToolkitSource = new THREEx.ArToolkitSource({
+			sourceType: "webcam", // image video
+			sourceWidth: window.innerWidth > window.innerHeight ? 640 : 480,
+			sourceHeight: window.innerWidth > window.innerHeight ? 480 : 640,
+		});
+
+		arToolkitSource.init(() => {
+			arToolkitSource.domElement.addEventListener("canplay", () => {
+				console.log("canplay");
+
+				initARContext();
+			});
+		});
+
+		// main engin, 去在数据源中寻找marker的位置
+		function initARContext() {
+			arToolkitContext = new THREEx.ArToolkitContext({
+				cameraParametersUrl:
+					THREEx.ArToolkitContext.baseURL + "data/data/camera_para.dat", // 摄像机参数文件
+				detectionMode: "mono", // 单色？灰度？  还有color等可选项，https://www.jianshu.com/p/6be1f89a54ff
+			});
+
+			arToolkitContext.init(() => {
+				camera.projectionMatrix.copy(arToolkitContext.getProjectionMatrix());
+
+				arToolkitContext.arController.orientation = getSourceOrientation();
+				arToolkitContext.arController.options.orientation =
+					getSourceOrientation();
+
+				window.arToolkitContext = arToolkitContext;
+			});
+
+			// Marker
+			// 控制着Marker的位置，使用threejs的controls api保证模型在marker的上方
+			arMarkerControls = new THREEx.ArMarkerControls(arToolkitContext, camera, {
+				type: "pattern", // ['pattern', 'barcode', 'unknown' ]
+				patternUrl: "./marker/pattern-QR.patt",
+				changeMatrixMode: "cameraTransformMatrix", // 因为我们控制着摄像机 [modelViewMatrix, cameraTransformMatrix]
+			});
+
+			scene.visible = false;
+			window.arMarkerControls = arMarkerControls;
+		}
+
+		// 获取数据源的页面方向
+		function getSourceOrientation() {
+			if (!arToolkitSource) {
+				return null;
+			}
+
+			if (
+				arToolkitSource.domElement.videoWidth >
+				arToolkitSource.domElement.videoHeight
+			) {
+				return "landscape"; // 横向
+			} else {
+				return "portrait"; // 纵向
+			}
+		}
+
+		onRenderFcts.push(() => {
+			if (!arToolkitContext || !arToolkitSource || !arToolkitSource.ready) {
+				return;
+			}
+
+			arToolkitContext.update(arToolkitSource.domElement);
+
+			// update scene.visible if the marker is seen
+			scene.visible = camera.visible;
+		});
+
+		/////////////////////////////////////////
+		//  add object in scene
+		/////////////////////////////////////////
+		var geometry = new THREE.BoxGeometry(1, 1, 1);
+		var material = new THREE.MeshNormalMaterial({
+			transparent: true, // 允许透明设置
+			opacity: 0.5, // 设置透明度
+			side: THREE.DoubleSide, // 设置渲染面
+		});
+		var mesh = new THREE.Mesh(geometry, material);
+		mesh.position.y = geometry.parameters.height / 2;
+		scene.add(mesh);
+
+		///////////////////////////////////////////
+		// 渲染所有
+		///////////////////////////////////////////
+		onRenderFcts.push(() => {
+			renderer.render(scene, camera);
+		});
+
+		requestAnimationFrame(function animate() {
+			requestAnimationFrame(animate);
+
+			onRenderFcts.forEach((func) => func());
+		});
+	</script>
 </html>
