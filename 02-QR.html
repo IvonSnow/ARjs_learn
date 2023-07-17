@@ -70,7 +70,8 @@
 			// 控制着Marker的位置，使用threejs的controls api保证模型在marker的上方
 			arMarkerControls = new THREEx.ArMarkerControls(arToolkitContext, camera, {
 				type: "pattern", // ['pattern', 'barcode', 'unknown' ]
-				patternUrl: "./marker/pattern-QR.patt",
+				patternUrl:
+					"https://raw.githack.com/IvonSnow/ARjs_learn/marker/pattern-QR.patt",
 				changeMatrixMode: "cameraTransformMatrix", // 因为我们控制着摄像机 [modelViewMatrix, cameraTransformMatrix]
 			});
 
