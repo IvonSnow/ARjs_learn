@@ -5,12 +5,8 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<title>QR</title>
 
-		<script src="../AR.js-master/three.js/examples/vendor/three.js/build/three.min.js"></script>
-		<script src="../AR.js-master/three.js/build/ar-threex.js"></script>
-
-		<script>
-			THREEx.ArToolkitContext.baseURL = "../AR.js-master/";
-		</script>
+		<script src="./lib/three.js/examples/vendor/three.js/build/three.min.js"></script>
+		<script src="./lib/three.js/build/ar-threex.js"></script>
 	</head>
 	<body>
 		<h1>使用QR码</h1>
@@ -55,8 +51,7 @@
 		// main engin, 去在数据源中寻找marker的位置
 		function initARContext() {
 			arToolkitContext = new THREEx.ArToolkitContext({
-				cameraParametersUrl:
-					THREEx.ArToolkitContext.baseURL + "data/data/camera_para.dat", // 摄像机参数文件
+				cameraParametersUrl: "./lib/data/data/camera_para.dat", // 摄像机参数文件
 				detectionMode: "mono", // 单色？灰度？  还有color等可选项，https://www.jianshu.com/p/6be1f89a54ff
 			});
 
