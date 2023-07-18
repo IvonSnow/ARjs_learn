@@ -7,6 +7,7 @@
 
 		<script src="https://raw.githack.com/AR-js-org/AR.js/3.4.5/three.js/examples/vendor/three.js/build/three.min.js"></script>
 		<script src="https://raw.githack.com/AR-js-org/AR.js/3.4.5/three.js/build/ar-threex.js"></script>
+		<link rel="stylesheet" href="./css/style.css" />
 	</head>
 	<body>
 		<h1>使用QR码</h1>
@@ -70,8 +71,7 @@
 			// 控制着Marker的位置，使用threejs的controls api保证模型在marker的上方
 			arMarkerControls = new THREEx.ArMarkerControls(arToolkitContext, camera, {
 				type: "pattern", // ['pattern', 'barcode', 'unknown' ]
-				patternUrl:
-					"https://raw.githack.com/IvonSnow/ARjs_learn/marker/pattern-QR.patt",
+				patternUrl: "./images/pattern-QR.patt",
 				changeMatrixMode: "cameraTransformMatrix", // 因为我们控制着摄像机 [modelViewMatrix, cameraTransformMatrix]
 			});
 
