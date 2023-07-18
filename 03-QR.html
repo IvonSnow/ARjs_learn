@@ -6,9 +6,7 @@
 		<title>QR</title>
 
 		<script src="https://raw.githack.com/AR-js-org/AR.js/3.4.5/three.js/examples/vendor/three.js/build/three.min.js"></script>
-		<script src="https://raw.githack.com/AR-js-org/AR.js/3.4.5/three.js/examples/vendor/three.js/examples/js/libs/stats.min.js"></script>
 		<script src="https://raw.githack.com/AR-js-org/AR.js/3.4.5/three.js/build/ar-threex.js"></script>
-
 		<link rel="stylesheet" href="./css/style.css" />
 	</head>
 	<body>
@@ -20,12 +18,11 @@
 
 		// init render
 		var renderer = new THREE.WebGLRenderer({
-			// antialias: true, // 抗锯齿
+			antialias: true, // 抗锯齿
 			alpha: true, // 透明度 true = 0
 		});
-		renderer.setPixelRatio(3);
 		renderer.setClearColor(new THREE.Color("lightgrey"), 0); // 它的意思是每次绘制清除缓冲区后的颜色通道设置，简单就是设置每次绘制的背景颜色, 0代表透明度
-		renderer.setSize(window.innerWidth, window.innerHeight);
+		renderer.setSize(640, 480);
 		renderer.domElement.style.position = "absolute";
 		renderer.domElement.style.top = "0px";
 		renderer.domElement.style.left = "0px";
@@ -33,44 +30,24 @@
 
 		// init scene and camera
 		var scene = new THREE.Scene();
-		var camera = new THREE.PerspectiveCamera(
-			45,
-			window.innerWidth / window.innerHeight,
-			1,
-			1000
-		);
+		var camera = new THREE.Camera();
 		scene.add(camera);
 
 		var arToolkitContext, arMarkerControls;
-		var markerRoot = new THREE.Group();
-		scene.add(markerRoot);
-
 		// arToolkitSource 要去做位置分析的数据源
 		var arToolkitSource = new THREEx.ArToolkitSource({
 			sourceType: "webcam", // image video
+			sourceWidth: window.innerWidth > window.innerHeight ? 640 : 480,
+			sourceHeight: window.innerWidth > window.innerHeight ? 480 : 640,
 		});
 
 		arToolkitSource.init(() => {
-			initARContext();
-			onResize();
-		});
+			arToolkitSource.domElement.addEventListener("canplay", () => {
+				console.log("canplay");
 
-		// handle resize
-		window.addEventListener("resize", function () {
-			onResize();
+				initARContext();
+			});
 		});
-		function onResize() {
-			arToolkitSource.onResizeElement();
-			arToolkitSource.copyElementSizeTo(renderer.domElement);
-			if (window.arToolkitContext.arController !== null) {
-				arToolkitSource.copyElementSizeTo(
-					window.arToolkitContext.arController.canvas
-				);
-			}
-
-			camera.aspect = window.innerWidth / window.innerHeight;
-			camera.updateProjectionMatrix();
-		}
 
 		// main engin, 去在数据源中寻找marker的位置
 		function initARContext() {
@@ -78,9 +55,6 @@
 				cameraParametersUrl:
 					"https://raw.githack.com/AR-js-org/AR.js/3.4.5/data/data/camera_para.dat", // 摄像机参数文件
 				detectionMode: "mono", // 单色？灰度？  还有color等可选项，https://www.jianshu.com/p/6be1f89a54ff
-				maxDetectionRate: 30,
-				canvasWidth: 80 * 3,
-				canvasHeight: 60 * 3,
 			});
 
 			arToolkitContext.init(() => {
@@ -95,18 +69,14 @@
 
 			// Marker
 			// 控制着Marker的位置，使用threejs的controls api保证模型在marker的上方
-			arMarkerControls = new THREEx.ArMarkerControls(
-				arToolkitContext,
-				markerRoot,
-				{
-					type: "pattern", // ['pattern', 'barcode', 'unknown' ]
-					patternUrl: "./images/pattern-03.patt",
-					// changeMatrixMode: "cameraTransformMatrix", // 因为我们控制着摄像机 [modelViewMatrix, cameraTransformMatrix]
-				}
-			);
+			arMarkerControls = new THREEx.ArMarkerControls(arToolkitContext, camera, {
+				type: "pattern", // ['pattern', 'barcode', 'unknown' ]
+				patternUrl: "./images/pattern-03.patt",
+				changeMatrixMode: "cameraTransformMatrix", // 因为我们控制着摄像机 [modelViewMatrix, cameraTransformMatrix]
+			});
 
-			// scene.visible = false;
-			// window.arMarkerControls = arMarkerControls;
+			scene.visible = false;
+			window.arMarkerControls = arMarkerControls;
 		}
 
 		// 获取数据源的页面方向
@@ -133,30 +103,12 @@
 			arToolkitContext.update(arToolkitSource.domElement);
 
 			// update scene.visible if the marker is seen
-			// scene.visible = camera.visible;
-		});
-
-		///////////////////
-		var markerRoot = new THREE.Group();
-		scene.add(markerRoot);
-
-		// build a smoothedControls
-		var smoothedRoot = new THREE.Group();
-		scene.add(smoothedRoot);
-		var smoothedControls = new THREEx.ArSmoothedControls(smoothedRoot, {
-			lerpPosition: 0.4,
-			lerpQuaternion: 0.3,
-			lerpScale: 1,
-		});
-		onRenderFcts.push(function (delta) {
-			smoothedControls.update(markerRoot);
+			scene.visible = camera.visible;
 		});
 
 		/////////////////////////////////////////
 		//  add object in scene
 		/////////////////////////////////////////
-		var arWorldRoot = smoothedRoot;
-
 		var geometry = new THREE.BoxGeometry(1, 1, 1);
 		var material = new THREE.MeshNormalMaterial({
 			transparent: true, // 允许透明设置
@@ -167,15 +119,6 @@
 		mesh.position.y = geometry.parameters.height / 2;
 		scene.add(mesh);
 
-		///////////////////////////////////
-		// 性能监控
-		////////////////////////////////////
-		var stats = new Stats();
-		document.body.appendChild(stats.dom);
-		onRenderFcts.push(() => {
-			renderer.render(scene, camera);
-			stats.update();
-		});
 		///////////////////////////////////////////
 		// 渲染所有
 		///////////////////////////////////////////
