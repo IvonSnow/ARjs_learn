@@ -23,6 +23,7 @@
 			// antialias: true, // 抗锯齿
 			alpha: true, // 透明度 true = 0
 		});
+		renderer.setPixelRatio(3);
 		renderer.setClearColor(new THREE.Color("lightgrey"), 0); // 它的意思是每次绘制清除缓冲区后的颜色通道设置，简单就是设置每次绘制的背景颜色, 0代表透明度
 		renderer.setSize(window.innerWidth, window.innerHeight);
 		renderer.domElement.style.position = "absolute";
