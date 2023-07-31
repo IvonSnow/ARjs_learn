@@ -3,15 +3,17 @@
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<title>QR by image</title>
+		<title>QR</title>
 
 		<script src="https://raw.githack.com/AR-js-org/AR.js/3.4.5/three.js/examples/vendor/three.js/build/three.min.js"></script>
 		<script src="https://raw.githack.com/AR-js-org/AR.js/3.4.5/three.js/build/ar-threex.js"></script>
 		<link rel="stylesheet" href="./css/style.css" />
 	</head>
 	<body>
-		<h1 style="color: red">使用QR码</h1>
-		<p>把QR码作为image进行识别</p>
+		<h1>使用QR码</h1>
+		<p>
+			屏幕亮度太高，QR码应该还是打印出来识别会轻松些，现在能通过链接PC的webcamera识别出在手机上展示出的QR码
+		</p>
 	</body>
 
 	<script>
@@ -21,7 +23,6 @@
 		var renderer = new THREE.WebGLRenderer({
 			antialias: true, // 抗锯齿
 			alpha: true, // 透明度 true = 0
-			precision: "mediump", // 着色器精度
 		});
 		renderer.setClearColor(new THREE.Color("lightgrey"), 0); // 它的意思是每次绘制清除缓冲区后的颜色通道设置，简单就是设置每次绘制的背景颜色, 0代表透明度
 		renderer.setSize(640, 480);
@@ -39,8 +40,8 @@
 		// arToolkitSource 要去做位置分析的数据源
 		var arToolkitSource = new THREEx.ArToolkitSource({
 			sourceType: "webcam", // image video
-			sourceWidth: 640,
-			sourceHeight: 480,
+			sourceWidth: window.innerWidth > window.innerHeight ? 640 : 480,
+			sourceHeight: window.innerWidth > window.innerHeight ? 480 : 640,
 		});
 
 		arToolkitSource.init(() => {
@@ -51,26 +52,13 @@
 			});
 		});
 
-		// listener for end loading of NFT marker
-		window.addEventListener("arjs-nft-loaded", function (ev) {
-			console.log(ev);
-		});
-
 		// main engin, 去在数据源中寻找marker的位置
 		function initARContext() {
-			arToolkitContext = new THREEx.ArToolkitContext(
-				{
-					cameraParametersUrl:
-						"https://raw.githack.com/AR-js-org/AR.js/3.4.5/data/data/camera_para.dat", // 摄像机参数文件
-					detectionMode: "mono", // 单色？灰度？  还有color等可选项，https://www.jianshu.com/p/6be1f89a54ff
-					canvasWidth: 480,
-					canvasHeight: 640,
-				},
-				{
-					sourceWidth: 480,
-					sourceHeight: 640,
-				}
-			);
+			arToolkitContext = new THREEx.ArToolkitContext({
+				cameraParametersUrl:
+					"https://raw.githack.com/AR-js-org/AR.js/3.4.5/data/data/camera_para.dat", // 摄像机参数文件
+				detectionMode: "mono", // 单色？灰度？  还有color等可选项，https://www.jianshu.com/p/6be1f89a54ff
+			});
 
 			arToolkitContext.init(() => {
 				camera.projectionMatrix.copy(arToolkitContext.getProjectionMatrix());
@@ -85,8 +73,8 @@
 			// Marker
 			// 控制着Marker的位置，使用threejs的controls api保证模型在marker的上方
 			arMarkerControls = new THREEx.ArMarkerControls(arToolkitContext, camera, {
-				type: "nft", // ['pattern', 'barcode', 'unknown' ]
-				patternUrl: "./images/NFT/QR",
+				type: "pattern", // ['pattern', 'barcode', 'unknown' ]
+				patternUrl: "./images/pattern-QR.patt",
 				changeMatrixMode: "cameraTransformMatrix", // 因为我们控制着摄像机 [modelViewMatrix, cameraTransformMatrix]
 			});
 
