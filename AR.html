@@ -39,8 +39,8 @@
 		// arToolkitSource 要去做位置分析的数据源
 		var arToolkitSource = new THREEx.ArToolkitSource({
 			sourceType: "webcam", // image video
-			sourceWidth: 960,
-			sourceHeight: 1280,
+			sourceWidth: 640,
+			sourceHeight: 854,
 		});
 
 		arToolkitSource.init(() => {
@@ -58,19 +58,13 @@
 
 		// main engin, 去在数据源中寻找marker的位置
 		function initARContext() {
-			arToolkitContext = new THREEx.ArToolkitContext(
-				{
-					cameraParametersUrl:
-						"https://raw.githack.com/AR-js-org/AR.js/3.4.5/data/data/camera_para.dat", // 摄像机参数文件
-					detectionMode: "mono", // 单色？灰度？  还有color等可选项，https://www.jianshu.com/p/6be1f89a54ff
-					canvasWidth: 480,
-					canvasHeight: 640,
-				},
-				{
-					sourceWidth: 480,
-					sourceHeight: 640,
-				}
-			);
+			arToolkitContext = new THREEx.ArToolkitContext({
+				// cameraParametersUrl:
+				// 	"https://raw.githack.com/AR-js-org/AR.js/3.4.5/data/data/camera_para.dat", // 摄像机参数文件
+				detectionMode: "mono", // 单色？灰度？  还有color等可选项，https://www.jianshu.com/p/6be1f89a54ff
+				canvasWidth: 480,
+				canvasHeight: 640,
+			});
 
 			arToolkitContext.init(() => {
 				camera.projectionMatrix.copy(arToolkitContext.getProjectionMatrix());
