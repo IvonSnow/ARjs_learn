@@ -10,7 +10,7 @@
 		<link rel="stylesheet" href="./css/style.css" />
 	</head>
 	<body>
-		<h1 style="color: blue">使用QR码</h1>
+		<h1 style="color: orange">使用QR码</h1>
 		<p>把QR码作为image进行识别</p>
 	</body>
 
@@ -24,7 +24,7 @@
 			precision: "mediump", // 着色器精度
 		});
 		renderer.setClearColor(new THREE.Color("lightgrey"), 0); // 它的意思是每次绘制清除缓冲区后的颜色通道设置，简单就是设置每次绘制的背景颜色, 0代表透明度
-		renderer.setSize(640, 480);
+		renderer.setSize(480, 640);
 		renderer.domElement.style.position = "absolute";
 		renderer.domElement.style.top = "0px";
 		renderer.domElement.style.left = "0px";
